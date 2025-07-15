@@ -24,14 +24,14 @@ export const PreviousShiftInput = ({ rooms, nurseNames, onPreviousNurseChange }:
             <div className="space-y-2">
               <Label className="font-semibold">Room {room.number}</Label>
               <Select
-                value={room.previousNurse || ""}
-                onValueChange={(value) => onPreviousNurseChange(room.id, value)}
+                value={room.previousNurse || "none"}
+                onValueChange={(value) => onPreviousNurseChange(room.id, value === "none" ? "" : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select previous nurse" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No previous nurse</SelectItem>
+                  <SelectItem value="none">No previous nurse</SelectItem>
                   {nurseNames.map((name) => (
                     <SelectItem key={name} value={name}>
                       {name}
