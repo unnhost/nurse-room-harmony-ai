@@ -331,8 +331,8 @@ export function createDefaultRooms(): Room[] {
     id: `room-${index}`,
     number,
     isOccupied: Math.random() > 0.2, // 80% occupancy by default
-    difficulty: ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)] as 'easy' | 'medium' | 'hard',
-    isChemo: Math.random() > 0.8, // 20% chemo rooms
+    difficulty: 'easy' as const, // All rooms start as easy
+    isChemo: false, // No chemo by default
     assignedNurse: undefined,
     previousNurse: undefined
   }));
