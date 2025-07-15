@@ -92,9 +92,15 @@ export const RoomGrid = ({
               {/* Difficulty Badge */}
               <Badge 
                 className={cn(
-                  "text-xs px-2 py-1 flex items-center gap-1",
+                  "text-xs px-2 py-1 flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity",
                   difficultyColors[room.difficulty]
                 )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const nextDifficulty = room.difficulty === 'easy' ? 'medium' : 
+                                       room.difficulty === 'medium' ? 'hard' : 'easy';
+                  onDifficultyChange(room.id, nextDifficulty);
+                }}
               >
                 {getDifficultyIcon(room.difficulty)}
                 {room.difficulty}
