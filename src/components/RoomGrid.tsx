@@ -109,11 +109,11 @@ export const RoomGrid = ({
 
               {/* Edit Controls */}
               {editMode && (
-                <div className="flex gap-1 mt-2">
+                <div className="flex flex-col gap-1 mt-2">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 text-xs"
+                    className="text-xs px-2 py-1 w-full"
                     onClick={(e) => {
                       e.stopPropagation();
                       onOccupancyToggle(room.id);
@@ -124,7 +124,7 @@ export const RoomGrid = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 text-xs"
+                    className="text-xs px-2 py-1 w-full"
                     onClick={(e) => {
                       e.stopPropagation();
                       onChemoToggle(room.id);
