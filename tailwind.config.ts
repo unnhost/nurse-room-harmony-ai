@@ -26,7 +26,9 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					light: 'hsl(var(--primary-light))',
+					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -42,7 +44,8 @@ export default {
 				},
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+					foreground: 'hsl(var(--accent-foreground))',
+					light: 'hsl(var(--accent-light))'
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
@@ -51,6 +54,34 @@ export default {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				easy: {
+					DEFAULT: 'hsl(var(--easy))',
+					foreground: 'hsl(var(--easy-foreground))'
+				},
+				medium: {
+					DEFAULT: 'hsl(var(--medium))',
+					foreground: 'hsl(var(--medium-foreground))'
+				},
+				hard: {
+					DEFAULT: 'hsl(var(--hard))',
+					foreground: 'hsl(var(--hard-foreground))'
+				},
+				chemo: {
+					DEFAULT: 'hsl(var(--chemo))',
+					foreground: 'hsl(var(--chemo-foreground))'
+				},
+				charge: {
+					DEFAULT: 'hsl(var(--charge))',
+					foreground: 'hsl(var(--charge-foreground))'
+				},
+				'off-care': {
+					DEFAULT: 'hsl(var(--off-care))',
+					foreground: 'hsl(var(--off-care-foreground))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
@@ -67,6 +98,16 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			boxShadow: {
+				'soft': 'var(--shadow-soft)',
+				'medium': 'var(--shadow-medium)',
+				'strong': 'var(--shadow-strong)'
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-accent': 'var(--gradient-accent)',
+				'gradient-subtle': 'var(--gradient-subtle)'
 			},
 			keyframes: {
 				'accordion-down': {

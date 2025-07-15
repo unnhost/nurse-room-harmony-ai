@@ -1,11 +1,185 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RoomGrid, Room } from "@/components/RoomGrid";
+import { ScheduleDisplay, NurseAssignment } from "@/components/ScheduleDisplay";
+import { generateSchedule, getDefaultNurseNames, createDefaultRooms } from "@/utils/schedulingAlgorithm";
+import { Users, Settings, Calendar, Play } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  const [nurseCount, setNurseCount] = useState<5 | 6 | 7>(6);
+  const [nurseNames, setNurseNames] = useState<string[]>(getDefaultNurseNames(6));
+  const [rooms, setRooms] = useState<Room[]>(createDefaultRooms());
+  const [assignments, setAssignments] = useState<NurseAssignment[]>([]);
+  const [warnings, setWarnings] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState("setup");
+  const { toast } = useToast();
+
+  const handleNurseCountChange = (value: string) => {
+    const count = parseInt(value) as 5 | 6 | 7;
+    setNurseCount(count);
+    setNurseNames(getDefaultNurseNames(count));
+  };
+
+  const handleRoomDifficultyChange = (roomId: string, difficulty: 'easy' | 'medium' | 'hard') => {
+    setRooms(rooms.map(room => 
+      room.id === roomId ? { ...room, difficulty } : room
+    ));
+  };
+
+  const handleChemoToggle = (roomId: string) => {
+    setRooms(rooms.map(room => 
+      room.id === roomId ? { ...room, isChemo: !room.isChemo } : room
+    ));
+  };
+
+  const handleOccupancyToggle = (roomId: string) => {
+    setRooms(rooms.map(room => 
+      room.id === roomId ? { ...room, isOccupied: !room.isOccupied } : room
+    ));
+  };
+
+  const generateAssignments = () => {
+    const result = generateSchedule({
+      nurseCount,
+      nurseNames,
+      rooms
+    });
+
+    setAssignments(result.assignments);
+    setWarnings(result.warnings);
+    setActiveTab("schedule");
+
+    toast({
+      title: result.success ? "Schedule Generated!" : "Schedule Generated with Warnings",
+      description: result.success 
+        ? `Successfully assigned ${result.totalRooms} rooms to ${nurseCount} nurses`
+        : `${result.warnings.length} warnings found in assignment`,
+    });
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gradient-subtle">
+      <div className="container mx-auto p-6">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            Nurse Assignment Scheduler
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Intelligent room assignment system for hospital floor management
+          </p>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="setup" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Setup
+            </TabsTrigger>
+            <TabsTrigger value="rooms" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Rooms
+            </TabsTrigger>
+            <TabsTrigger value="schedule" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Schedule
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="setup" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Shift Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="nurseCount">Number of Nurses</Label>
+                  <Select value={nurseCount.toString()} onValueChange={handleNurseCountChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5 Nurses</SelectItem>
+                      <SelectItem value="6">6 Nurses (1 Charge)</SelectItem>
+                      <SelectItem value="7">7 Nurses (1 Off-Care)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Nurse Names</Label>
+                  {nurseNames.map((name, index) => (
+                    <Input
+                      key={index}
+                      value={name}
+                      onChange={(e) => {
+                        const newNames = [...nurseNames];
+                        newNames[index] = e.target.value;
+                        setNurseNames(newNames);
+                      }}
+                      placeholder={`Nurse ${index + 1} name`}
+                    />
+                  ))}
+                </div>
+
+                <Button 
+                  onClick={generateAssignments}
+                  className="w-full"
+                  variant="medical"
+                  size="lg"
+                >
+                  <Play className="h-5 w-5 mr-2" />
+                  Generate Schedule
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="rooms">
+            <Card>
+              <CardHeader>
+                <CardTitle>Room Configuration</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RoomGrid
+                  rooms={rooms}
+                  onRoomClick={() => {}}
+                  onDifficultyChange={handleRoomDifficultyChange}
+                  onChemoToggle={handleChemoToggle}
+                  onOccupancyToggle={handleOccupancyToggle}
+                  editMode={true}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="schedule">
+            {assignments.length > 0 ? (
+              <ScheduleDisplay
+                assignments={assignments}
+                totalRooms={rooms.filter(r => r.isOccupied).length}
+                warnings={warnings}
+              />
+            ) : (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-lg text-muted-foreground">
+                    No schedule generated yet. Configure your shift and generate assignments.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
