@@ -1,9 +1,10 @@
 import { Room } from "@/components/RoomGrid";
 import { NurseAssignment } from "@/components/ScheduleDisplay";
 import { SchedulingParams, SchedulingResult } from "./schedulingAlgorithm";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface AISchedulingParams extends SchedulingParams {
-  apiKey: string;
+  // API key is now handled securely in Edge Function
 }
 
 // Hospital policies for AI context
@@ -28,7 +29,7 @@ ROOM LAYOUT (contiguous blocks):
 `;
 
 export async function generateAISchedule(params: AISchedulingParams): Promise<SchedulingResult> {
-  const { nurseCount, nurseNames, rooms, apiKey, prioritizeContinuity = true } = params;
+  const { nurseCount, nurseNames, rooms, prioritizeContinuity = true } = params;
   const occupiedRooms = rooms.filter(room => room.isOccupied);
   
   if (occupiedRooms.length === 0) {
@@ -50,57 +51,33 @@ export async function generateAISchedule(params: AISchedulingParams): Promise<Sc
   }
 
   try {
-    const prompt = createAssignmentPrompt(nurseCount, nurseNames, occupiedRooms, prioritizeContinuity);
+    console.log('Calling AI scheduling Edge Function...');
     
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an expert hospital nurse assignment system. Your job is to create optimal room assignments following strict hospital policies and safety requirements.
-
-${HOSPITAL_POLICIES}
-
-You must return a valid JSON object with the exact structure shown in the user prompt. Be extremely careful with chemo limits and charge nurse requirements.`
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.1,
-        max_tokens: 2000
-      }),
+    const { data, error } = await supabase.functions.invoke('ai-scheduling', {
+      body: {
+        nurseCount,
+        nurseNames,
+        rooms,
+        prioritizeContinuity
+      }
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData?.error?.message || response.statusText;
-      
-      if (response.status === 429) {
-        throw new Error(`OpenAI quota exceeded. Please check your billing at https://platform.openai.com/usage`);
-      } else if (response.status === 401) {
-        throw new Error(`Invalid API key. Please check your OpenAI API key.`);
-      } else {
-        throw new Error(`OpenAI API error (${response.status}): ${errorMessage}`);
-      }
+    if (error) {
+      throw new Error(`Edge Function error: ${error.message}`);
     }
 
-    const data = await response.json();
-    const aiResponse = data.choices[0]?.message?.content;
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    const { aiResponse, nurseNames: returnedNurseNames, occupiedRooms: returnedOccupiedRooms, nurseCount: returnedNurseCount } = data;
 
     if (!aiResponse) {
       throw new Error('No response from OpenAI API');
     }
 
     // Parse AI response and validate
-    const result = parseAIResponse(aiResponse, nurseNames, occupiedRooms, nurseCount);
+    const result = parseAIResponse(aiResponse, returnedNurseNames, returnedOccupiedRooms, returnedNurseCount);
     return result;
 
   } catch (error) {

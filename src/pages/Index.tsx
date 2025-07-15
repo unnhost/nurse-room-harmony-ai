@@ -10,7 +10,7 @@ import { PreviousShiftInput } from "@/components/PreviousShiftInput";
 import { ScheduleDisplay, NurseAssignment } from "@/components/ScheduleDisplay";
 import { generateSchedule, getDefaultNurseNames, createDefaultRooms } from "@/utils/schedulingAlgorithm";
 import { generateAISchedule } from "@/utils/aiScheduling";
-import { Users, Settings, Calendar, Play, Bot, Key } from "lucide-react";
+import { Users, Settings, Calendar, Play, Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 const Index = () => {
   const [nurseCount, setNurseCount] = useState<5 | 6 | 7>(6);
@@ -19,7 +19,6 @@ const Index = () => {
   const [assignments, setAssignments] = useState<NurseAssignment[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("setup");
-  const [apiKey, setApiKey] = useState<string>("");
   const [isAIGenerating, setIsAIGenerating] = useState(false);
   const {
     toast
@@ -69,22 +68,12 @@ const Index = () => {
   };
 
   const generateAIAssignments = async () => {
-    if (!apiKey.trim()) {
-      toast({
-        title: "API Key Required",
-        description: "Please enter your OpenAI API key to use AI scheduling",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setIsAIGenerating(true);
     try {
       const result = await generateAISchedule({
         nurseCount,
         nurseNames,
-        rooms,
-        apiKey: apiKey.trim()
+        rooms
       });
       
       setAssignments(result.assignments);
@@ -169,26 +158,9 @@ const Index = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="apiKey">OpenAI API Key (for AI scheduling)</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="apiKey"
-                        type="password"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                        placeholder="sk-..."
-                        className="flex-1"
-                      />
-                      <Button variant="outline" size="icon">
-                        <Key className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Your API key is stored locally and never sent to our servers. 
-                      <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        Get API key
-                      </a>
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      AI scheduling uses your securely stored OpenAI API key to generate optimal nurse assignments.
                     </p>
                   </div>
 
