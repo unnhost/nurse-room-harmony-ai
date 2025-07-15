@@ -11,7 +11,6 @@ import { ScheduleDisplay, NurseAssignment } from "@/components/ScheduleDisplay";
 import { generateSchedule, getDefaultNurseNames, createDefaultRooms } from "@/utils/schedulingAlgorithm";
 import { Users, Settings, Calendar, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
 const Index = () => {
   const [nurseCount, setNurseCount] = useState<5 | 6 | 7>(6);
   const [nurseNames, setNurseNames] = useState<string[]>(getDefaultNurseNames(6));
@@ -19,64 +18,56 @@ const Index = () => {
   const [assignments, setAssignments] = useState<NurseAssignment[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("setup");
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const handleNurseCountChange = (value: string) => {
     const count = parseInt(value) as 5 | 6 | 7;
     setNurseCount(count);
     setNurseNames(getDefaultNurseNames(count));
   };
-
   const handleRoomDifficultyChange = (roomId: string, difficulty: 'easy' | 'medium' | 'hard') => {
-    setRooms(rooms.map(room => 
-      room.id === roomId ? { ...room, difficulty } : room
-    ));
+    setRooms(rooms.map(room => room.id === roomId ? {
+      ...room,
+      difficulty
+    } : room));
   };
-
   const handleChemoToggle = (roomId: string) => {
-    setRooms(rooms.map(room => 
-      room.id === roomId ? { ...room, isChemo: !room.isChemo } : room
-    ));
+    setRooms(rooms.map(room => room.id === roomId ? {
+      ...room,
+      isChemo: !room.isChemo
+    } : room));
   };
-
   const handleOccupancyToggle = (roomId: string) => {
-    setRooms(rooms.map(room => 
-      room.id === roomId ? { ...room, isOccupied: !room.isOccupied } : room
-    ));
+    setRooms(rooms.map(room => room.id === roomId ? {
+      ...room,
+      isOccupied: !room.isOccupied
+    } : room));
   };
-
   const handlePreviousNurseChange = (roomId: string, previousNurse: string) => {
-    setRooms(rooms.map(room => 
-      room.id === roomId ? { ...room, previousNurse: previousNurse || undefined } : room
-    ));
+    setRooms(rooms.map(room => room.id === roomId ? {
+      ...room,
+      previousNurse: previousNurse || undefined
+    } : room));
   };
-
   const generateAssignments = () => {
     const result = generateSchedule({
       nurseCount,
       nurseNames,
       rooms
     });
-
     setAssignments(result.assignments);
     setWarnings(result.warnings);
     setActiveTab("schedule");
-
     toast({
       title: result.success ? "Schedule Generated!" : "Schedule Generated with Warnings",
-      description: result.success 
-        ? `Successfully assigned ${result.totalRooms} rooms to ${nurseCount} nurses`
-        : `${result.warnings.length} warnings found in assignment`,
+      description: result.success ? `Successfully assigned ${result.totalRooms} rooms to ${nurseCount} nurses` : `${result.warnings.length} warnings found in assignment`
     });
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-subtle">
+  return <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto p-6">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-foreground mb-2">
-            Nurse Assignment Scheduler
-          </h1>
+          <h1 className="text-4xl font-bold text-foreground mb-2">Infill 6 assignment </h1>
           <p className="text-lg text-muted-foreground">
             Intelligent room assignment system for hospital floor management
           </p>
@@ -127,26 +118,14 @@ const Index = () => {
 
                 <div className="space-y-2">
                   <Label>Nurse Names</Label>
-                  {nurseNames.map((name, index) => (
-                    <Input
-                      key={index}
-                      value={name}
-                      onChange={(e) => {
-                        const newNames = [...nurseNames];
-                        newNames[index] = e.target.value;
-                        setNurseNames(newNames);
-                      }}
-                      placeholder={`Nurse ${index + 1} name`}
-                    />
-                  ))}
+                  {nurseNames.map((name, index) => <Input key={index} value={name} onChange={e => {
+                  const newNames = [...nurseNames];
+                  newNames[index] = e.target.value;
+                  setNurseNames(newNames);
+                }} placeholder={`Nurse ${index + 1} name`} />)}
                 </div>
 
-                <Button 
-                  onClick={generateAssignments}
-                  className="w-full"
-                  variant="medical"
-                  size="lg"
-                >
+                <Button onClick={generateAssignments} className="w-full" variant="medical" size="lg">
                   <Play className="h-5 w-5 mr-2" />
                   Generate Schedule
                 </Button>
@@ -163,11 +142,7 @@ const Index = () => {
                 </p>
               </CardHeader>
               <CardContent>
-                <PreviousShiftInput
-                  rooms={rooms}
-                  nurseNames={nurseNames}
-                  onPreviousNurseChange={handlePreviousNurseChange}
-                />
+                <PreviousShiftInput rooms={rooms} nurseNames={nurseNames} onPreviousNurseChange={handlePreviousNurseChange} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -178,40 +153,23 @@ const Index = () => {
                 <CardTitle>Room Configuration</CardTitle>
               </CardHeader>
               <CardContent>
-                <RoomGrid
-                  rooms={rooms}
-                  onRoomClick={() => {}}
-                  onDifficultyChange={handleRoomDifficultyChange}
-                  onChemoToggle={handleChemoToggle}
-                  onOccupancyToggle={handleOccupancyToggle}
-                  editMode={true}
-                />
+                <RoomGrid rooms={rooms} onRoomClick={() => {}} onDifficultyChange={handleRoomDifficultyChange} onChemoToggle={handleChemoToggle} onOccupancyToggle={handleOccupancyToggle} editMode={true} />
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="schedule">
-            {assignments.length > 0 ? (
-              <ScheduleDisplay
-                assignments={assignments}
-                totalRooms={rooms.filter(r => r.isOccupied).length}
-                warnings={warnings}
-              />
-            ) : (
-              <Card>
+            {assignments.length > 0 ? <ScheduleDisplay assignments={assignments} totalRooms={rooms.filter(r => r.isOccupied).length} warnings={warnings} /> : <Card>
                 <CardContent className="text-center py-12">
                   <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <p className="text-lg text-muted-foreground">
                     No schedule generated yet. Configure your shift and generate assignments.
                   </p>
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
