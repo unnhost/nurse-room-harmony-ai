@@ -17,9 +17,9 @@ export interface SchedulingResult {
 // Room proximity groups for optimal assignment
 const PROXIMITY_GROUPS = {
   'group-a': ['600', '601', '602', '603', '607', '608', '609', '610'],
-  'group-b': ['617AB', '618AB', '619', '620', '621', '623'],
-  'group-c': ['615AB', '616AB'],
-  'group-other': ['604', '605AB', '606AB', '611', '612', '613', '614', '615', '616', '622']
+  'group-b': ['617A', '617B', '618A', '618B', '619', '620', '621', '623'],
+  'group-c': ['615A', '615B', '616A', '616B'],
+  'group-other': ['604', '605A', '605B', '606A', '606B', '611', '612', '613', '614', '615', '616', '622']
 };
 
 // Difficulty scoring system
@@ -249,8 +249,8 @@ export function getDefaultNurseNames(count: number): string[] {
 // Helper function to create default room data
 export function createDefaultRooms(): Room[] {
   const roomNumbers = [
-    '600', '601', '602', '603', '604', '605AB', '606AB', '607', '608', '609',
-    '610', '611', '612', '613', '614', '615AB', '616AB', '617AB', '618AB',
+    '600', '601', '602', '603', '604', '605A', '605B', '606A', '606B', '607', '608', '609',
+    '610', '611', '612', '613', '614', '615A', '615B', '616A', '616B', '617A', '617B', '618A', '618B',
     '619', '620', '621', '622', '623'
   ];
   

@@ -52,10 +52,10 @@ export const RoomGrid = ({
     if (['600', '601', '602', '603', '607', '608', '609', '610'].includes(roomNumber)) {
       return 'group-a';
     }
-    if (['617AB', '618AB', '619', '620', '621', '623'].includes(roomNumber)) {
+    if (['617A', '617B', '618A', '618B', '619', '620', '621', '623'].includes(roomNumber)) {
       return 'group-b';
     }
-    if (['615AB', '616AB'].includes(roomNumber)) {
+    if (['615A', '615B', '616A', '616B'].includes(roomNumber)) {
       return 'group-c';
     }
     return 'group-other';
