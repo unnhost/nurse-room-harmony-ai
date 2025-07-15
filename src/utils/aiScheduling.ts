@@ -80,7 +80,16 @@ You must return a valid JSON object with the exact structure shown in the user p
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData?.error?.message || response.statusText;
+      
+      if (response.status === 429) {
+        throw new Error(`OpenAI quota exceeded. Please check your billing at https://platform.openai.com/usage`);
+      } else if (response.status === 401) {
+        throw new Error(`Invalid API key. Please check your OpenAI API key.`);
+      } else {
+        throw new Error(`OpenAI API error (${response.status}): ${errorMessage}`);
+      }
     }
 
     const data = await response.json();

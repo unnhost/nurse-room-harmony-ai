@@ -185,7 +185,10 @@ const Index = () => {
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Your API key is stored locally and never sent to our servers
+                      Your API key is stored locally and never sent to our servers. 
+                      <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        Get API key
+                      </a>
                     </p>
                   </div>
 
