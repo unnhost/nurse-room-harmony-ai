@@ -66,7 +66,6 @@ const Index = () => {
       description: result.success ? `Successfully assigned ${result.totalRooms} rooms to ${nurseCount} nurses` : `${result.warnings.length} warnings found in assignment`
     });
   };
-
   const generateAIAssignments = async () => {
     setIsAIGenerating(true);
     try {
@@ -75,16 +74,12 @@ const Index = () => {
         nurseNames,
         rooms
       });
-      
       setAssignments(result.assignments);
       setWarnings(result.warnings);
       setActiveTab("schedule");
-      
       toast({
         title: result.success ? "AI Schedule Generated!" : "AI Schedule Generated with Warnings",
-        description: result.success 
-          ? `AI successfully assigned ${result.totalRooms} rooms to ${nurseCount} nurses` 
-          : `${result.warnings.length} warnings found in AI assignment`
+        description: result.success ? `AI successfully assigned ${result.totalRooms} rooms to ${nurseCount} nurses` : `${result.warnings.length} warnings found in AI assignment`
       });
     } catch (error) {
       toast({
@@ -101,8 +96,7 @@ const Index = () => {
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-foreground mb-2">Infill 6 assignment </h1>
           <p className="text-lg text-muted-foreground">
-            Intelligent room assignment system for hospital floor management
-          </p>
+        </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -159,9 +153,7 @@ const Index = () => {
 
                 <div className="space-y-4">
                   <div className="p-3 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      AI scheduling uses your securely stored OpenAI API key to generate optimal nurse assignments.
-                    </p>
+                    
                   </div>
 
                   <div className="flex gap-2">
@@ -169,13 +161,7 @@ const Index = () => {
                       <Play className="h-5 w-5 mr-2" />
                       Generate Schedule
                     </Button>
-                    <Button 
-                      onClick={generateAIAssignments} 
-                      className="flex-1" 
-                      variant="outline" 
-                      size="lg"
-                      disabled={isAIGenerating}
-                    >
+                    <Button onClick={generateAIAssignments} className="flex-1" variant="outline" size="lg" disabled={isAIGenerating}>
                       <Bot className="h-5 w-5 mr-2" />
                       {isAIGenerating ? "AI Thinking..." : "AI Schedule"}
                     </Button>
