@@ -11,6 +11,7 @@ export interface Room {
   difficulty: 'easy' | 'medium' | 'hard';
   isChemo: boolean;
   assignedNurse?: string;
+  previousNurse?: string; // For continuity of care
 }
 
 interface RoomGridProps {
@@ -19,7 +20,9 @@ interface RoomGridProps {
   onDifficultyChange: (roomId: string, difficulty: 'easy' | 'medium' | 'hard') => void;
   onChemoToggle: (roomId: string) => void;
   onOccupancyToggle: (roomId: string) => void;
+  onPreviousNurseChange?: (roomId: string, previousNurse: string) => void;
   editMode?: boolean;
+  showPreviousAssignments?: boolean;
 }
 
 const difficultyColors = {
@@ -40,7 +43,9 @@ export const RoomGrid = ({
   onDifficultyChange, 
   onChemoToggle, 
   onOccupancyToggle,
-  editMode = false 
+  onPreviousNurseChange,
+  editMode = false,
+  showPreviousAssignments = false
 }: RoomGridProps) => {
   const getDifficultyIcon = (difficulty: 'easy' | 'medium' | 'hard') => {
     const Icon = difficultyIcons[difficulty];
@@ -124,7 +129,14 @@ export const RoomGrid = ({
               {/* Assigned Nurse */}
               {room.assignedNurse && (
                 <div className="text-xs text-muted-foreground truncate">
-                  {room.assignedNurse}
+                  Current: {room.assignedNurse}
+                </div>
+              )}
+
+              {/* Previous Nurse (for continuity) */}
+              {showPreviousAssignments && room.previousNurse && (
+                <div className="text-xs text-accent-foreground truncate">
+                  Previous: {room.previousNurse}
                 </div>
               )}
 

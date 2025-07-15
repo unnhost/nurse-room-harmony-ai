@@ -5,6 +5,7 @@ export interface SchedulingParams {
   nurseCount: 5 | 6 | 7;
   nurseNames: string[];
   rooms: Room[];
+  prioritizeContinuity?: boolean;
 }
 
 export interface SchedulingResult {
@@ -34,9 +35,12 @@ const DIFFICULTY_WEIGHTS = {
 };
 
 export function generateSchedule(params: SchedulingParams): SchedulingResult {
-  const { nurseCount, nurseNames, rooms } = params;
+  const { nurseCount, nurseNames, rooms, prioritizeContinuity = true } = params;
   const occupiedRooms = rooms.filter(room => room.isOccupied);
   const warnings: string[] = [];
+  
+  // Clear previous assignments
+  occupiedRooms.forEach(room => room.assignedNurse = undefined);
   
   // Initialize nurse assignments
   const assignments: NurseAssignment[] = nurseNames.map((name, index) => ({
@@ -108,9 +112,16 @@ export function generateSchedule(params: SchedulingParams): SchedulingResult {
     }
   }
 
-  // Assign chemo rooms first (max 1 per nurse)
+  // Step 1: Assign continuity rooms (returning nurses get their previous patients)
+  if (prioritizeContinuity) {
+    assignContinuityRooms(occupiedRooms, activeNurses, nurseNames);
+  }
+
+  // Step 2: Assign chemo rooms first (max 1 per nurse)
   const chemoAssignments = new Set<number>();
-  chemoRooms.forEach(room => {
+  const availableChemoRooms = chemoRooms.filter(room => !room.assignedNurse);
+  
+  availableChemoRooms.forEach(room => {
     for (let i = 0; i < activeNurses.length; i++) {
       if (!chemoAssignments.has(i) && activeNurses[i].rooms.length < targetRoomsPerNurse[i]) {
         activeNurses[i].rooms.push(room);
@@ -123,12 +134,12 @@ export function generateSchedule(params: SchedulingParams): SchedulingResult {
   });
 
   // Check for unassigned chemo rooms
-  const unassignedChemo = chemoRooms.filter(room => !room.assignedNurse);
+  const unassignedChemo = availableChemoRooms.filter(room => !room.assignedNurse);
   if (unassignedChemo.length > 0) {
     warnings.push(`${unassignedChemo.length} chemo rooms could not be assigned (max 1 per nurse)`);
   }
 
-  // Assign remaining non-chemo rooms using contiguous block algorithm
+  // Step 3: Assign remaining non-chemo rooms using contiguous block algorithm
   const remainingRooms = nonChemoRooms.filter(room => !room.assignedNurse);
   assignRoomsByContiguousBlocks(remainingRooms, activeNurses, targetRoomsPerNurse);
 
@@ -175,6 +186,31 @@ export function generateSchedule(params: SchedulingParams): SchedulingResult {
     totalRooms: occupiedRooms.length,
     success: warnings.length === 0
   };
+}
+
+function assignContinuityRooms(
+  rooms: Room[],
+  nurses: NurseAssignment[],
+  nurseNames: string[]
+): void {
+  // Find rooms that have previous nurse assignments
+  const continuityRooms = rooms.filter(room => 
+    room.previousNurse && nurseNames.includes(room.previousNurse)
+  );
+
+  continuityRooms.forEach(room => {
+    // Find the nurse who had this room previously
+    const nurse = nurses.find(n => n.name === room.previousNurse);
+    if (nurse && !nurse.isOffCare) {
+      nurse.rooms.push(room);
+      room.assignedNurse = nurse.name;
+      
+      // If it's a chemo room, update chemo count
+      if (room.isChemo) {
+        nurse.chemoCount++;
+      }
+    }
+  });
 }
 
 function assignRoomsByContiguousBlocks(
@@ -297,6 +333,7 @@ export function createDefaultRooms(): Room[] {
     isOccupied: Math.random() > 0.2, // 80% occupancy by default
     difficulty: ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)] as 'easy' | 'medium' | 'hard',
     isChemo: Math.random() > 0.8, // 20% chemo rooms
-    assignedNurse: undefined
+    assignedNurse: undefined,
+    previousNurse: undefined
   }));
 }

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoomGrid, Room } from "@/components/RoomGrid";
+import { PreviousShiftInput } from "@/components/PreviousShiftInput";
 import { ScheduleDisplay, NurseAssignment } from "@/components/ScheduleDisplay";
 import { generateSchedule, getDefaultNurseNames, createDefaultRooms } from "@/utils/schedulingAlgorithm";
 import { Users, Settings, Calendar, Play } from "lucide-react";
@@ -44,6 +45,12 @@ const Index = () => {
     ));
   };
 
+  const handlePreviousNurseChange = (roomId: string, previousNurse: string) => {
+    setRooms(rooms.map(room => 
+      room.id === roomId ? { ...room, previousNurse: previousNurse || undefined } : room
+    ));
+  };
+
   const generateAssignments = () => {
     const result = generateSchedule({
       nurseCount,
@@ -76,10 +83,14 @@ const Index = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="setup" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               Setup
+            </TabsTrigger>
+            <TabsTrigger value="previous" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Previous Shift
             </TabsTrigger>
             <TabsTrigger value="rooms" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -139,6 +150,24 @@ const Index = () => {
                   <Play className="h-5 w-5 mr-2" />
                   Generate Schedule
                 </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="previous">
+            <Card>
+              <CardHeader>
+                <CardTitle>Previous Shift Assignments</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Set previous nurse assignments for continuity of care
+                </p>
+              </CardHeader>
+              <CardContent>
+                <PreviousShiftInput
+                  rooms={rooms}
+                  nurseNames={nurseNames}
+                  onPreviousNurseChange={handlePreviousNurseChange}
+                />
               </CardContent>
             </Card>
           </TabsContent>
