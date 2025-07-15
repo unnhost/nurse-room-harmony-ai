@@ -330,7 +330,7 @@ export function createDefaultRooms(): Room[] {
   return roomNumbers.map((number, index) => ({
     id: `room-${index}`,
     number,
-    isOccupied: Math.random() > 0.2, // 80% occupancy by default
+    isOccupied: false, // All rooms start empty by default
     difficulty: 'easy' as const, // All rooms start as easy
     isChemo: false, // No chemo by default
     assignedNurse: undefined,

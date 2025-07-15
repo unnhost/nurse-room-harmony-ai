@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,8 @@ import { PreviousShiftInput } from "@/components/PreviousShiftInput";
 import { ScheduleDisplay, NurseAssignment } from "@/components/ScheduleDisplay";
 import { generateSchedule, getDefaultNurseNames, createDefaultRooms } from "@/utils/schedulingAlgorithm";
 import { generateAISchedule } from "@/utils/aiScheduling";
-import { Users, Settings, Calendar, Play, Bot } from "lucide-react";
+import { saveSchedule, loadSchedule, getSchedulesList, deleteSchedule } from "@/utils/scheduleStorage";
+import { Users, Settings, Calendar, Play, Bot, Save, Upload, Download, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 const Index = () => {
   const [nurseCount, setNurseCount] = useState<5 | 6 | 7>(6);
@@ -20,6 +21,10 @@ const Index = () => {
   const [warnings, setWarnings] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("setup");
   const [isAIGenerating, setIsAIGenerating] = useState(false);
+  const [currentShift, setCurrentShift] = useState<'day' | 'night'>('day');
+  const [scheduleName, setScheduleName] = useState('');
+  const [savedSchedules, setSavedSchedules] = useState<any[]>([]);
+  const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
   const {
     toast
   } = useToast();
@@ -91,6 +96,108 @@ const Index = () => {
       setIsAIGenerating(false);
     }
   };
+
+  // Load saved schedules on component mount
+  useEffect(() => {
+    loadSchedulesList();
+  }, []);
+
+  const loadSchedulesList = async () => {
+    setIsLoadingSchedules(true);
+    const result = await getSchedulesList();
+    if (result.success) {
+      setSavedSchedules(result.data || []);
+    }
+    setIsLoadingSchedules(false);
+  };
+
+  const handleSaveSchedule = async () => {
+    if (!scheduleName.trim()) {
+      toast({
+        title: "Schedule Name Required",
+        description: "Please enter a name for your schedule",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (assignments.length === 0) {
+      toast({
+        title: "No Schedule to Save",
+        description: "Please generate a schedule first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const result = await saveSchedule(
+      scheduleName,
+      currentShift,
+      nurseCount,
+      nurseNames,
+      rooms,
+      assignments
+    );
+
+    if (result.success) {
+      toast({
+        title: "Schedule Saved!",
+        description: `${currentShift.charAt(0).toUpperCase() + currentShift.slice(1)} shift schedule saved successfully`
+      });
+      setScheduleName('');
+      loadSchedulesList();
+    } else {
+      toast({
+        title: "Save Failed",
+        description: result.error || "Failed to save schedule",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleLoadSchedule = async (shiftType: 'day' | 'night') => {
+    const result = await loadSchedule(shiftType);
+    
+    if (result.success && result.data) {
+      const schedule = result.data;
+      setNurseCount(schedule.nurse_count as 5 | 6 | 7);
+      setNurseNames(schedule.nurse_names);
+      setRooms(schedule.rooms);
+      setAssignments(schedule.assignments);
+      setWarnings([]);
+      setCurrentShift(shiftType);
+      setActiveTab("schedule");
+      
+      toast({
+        title: "Schedule Loaded!",
+        description: `${shiftType.charAt(0).toUpperCase() + shiftType.slice(1)} shift schedule loaded successfully`
+      });
+    } else {
+      toast({
+        title: "Load Failed",
+        description: result.error || "Failed to load schedule",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteSchedule = async (scheduleId: string) => {
+    const result = await deleteSchedule(scheduleId);
+    
+    if (result.success) {
+      toast({
+        title: "Schedule Deleted",
+        description: "Schedule deleted successfully"
+      });
+      loadSchedulesList();
+    } else {
+      toast({
+        title: "Delete Failed",
+        description: result.error || "Failed to delete schedule",
+        variant: "destructive"
+      });
+    }
+  };
   return <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-12 text-center space-y-4">
@@ -131,18 +238,33 @@ const Index = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-3">
-                  <Label htmlFor="nurseCount" className="text-base font-semibold">Number of Nurses</Label>
-                  <Select value={nurseCount.toString()} onValueChange={handleNurseCountChange}>
-                    <SelectTrigger className="h-12 text-base">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5 Nurses</SelectItem>
-                      <SelectItem value="6">6 Nurses (1 Charge)</SelectItem>
-                      <SelectItem value="7">7 Nurses (1 Off-Care)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="shiftType" className="text-base font-semibold">Shift Type</Label>
+                    <Select value={currentShift} onValueChange={(value: 'day' | 'night') => setCurrentShift(value)}>
+                      <SelectTrigger className="h-12 text-base">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="day">Day Shift</SelectItem>
+                        <SelectItem value="night">Night Shift</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="nurseCount" className="text-base font-semibold">Number of Nurses</Label>
+                    <Select value={nurseCount.toString()} onValueChange={handleNurseCountChange}>
+                      <SelectTrigger className="h-12 text-base">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="5">5 Nurses</SelectItem>
+                        <SelectItem value="6">6 Nurses (1 Charge)</SelectItem>
+                        <SelectItem value="7">7 Nurses (1 Off-Care)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -166,9 +288,24 @@ const Index = () => {
 
                 <div className="space-y-6 pt-4">
                   <div className="p-6 bg-gradient-subtle rounded-xl border border-border/50">
-                    <p className="text-center text-muted-foreground">
-                      Configure your shift settings and generate optimal nurse assignments
-                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold mb-2">Quick Actions</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Load existing schedules or generate new ones
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button onClick={() => handleLoadSchedule('day')} variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-2" />
+                          Load Day
+                        </Button>
+                        <Button onClick={() => handleLoadSchedule('night')} variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-2" />
+                          Load Night
+                        </Button>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4">
@@ -223,7 +360,36 @@ const Index = () => {
 
           <TabsContent value="schedule">
             {assignments.length > 0 ? (
-              <ScheduleDisplay assignments={assignments} totalRooms={rooms.filter(r => r.isOccupied).length} warnings={warnings} />
+              <div className="space-y-6">
+                <Card className="shadow-card border-0 bg-card/50 backdrop-blur-sm">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-3 text-xl">
+                      <div className="p-2 bg-gradient-primary rounded-lg">
+                        <Save className="h-5 w-5 text-white" />
+                      </div>
+                      Save Schedule
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="flex-1">
+                        <Input
+                          placeholder={`Enter name for ${currentShift} shift schedule`}
+                          value={scheduleName}
+                          onChange={(e) => setScheduleName(e.target.value)}
+                          className="h-12"
+                        />
+                      </div>
+                      <Button onClick={handleSaveSchedule} variant="success" size="lg" className="min-w-[120px]">
+                        <Save className="h-5 w-5 mr-2" />
+                        Save {currentShift.charAt(0).toUpperCase() + currentShift.slice(1)}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <ScheduleDisplay assignments={assignments} totalRooms={rooms.filter(r => r.isOccupied).length} warnings={warnings} />
+              </div>
             ) : (
               <Card className="shadow-card border-0 bg-card/50 backdrop-blur-sm">
                 <CardContent className="text-center py-16">

@@ -14,7 +14,136 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      nurse_assignments: {
+        Row: {
+          assigned_rooms: string[]
+          chemo_count: number
+          created_at: string
+          difficulty_score: number
+          id: string
+          is_charge: boolean
+          is_off_care: boolean
+          nurse_name: string
+          schedule_id: string
+          updated_at: string
+          warnings: string[]
+        }
+        Insert: {
+          assigned_rooms?: string[]
+          chemo_count?: number
+          created_at?: string
+          difficulty_score?: number
+          id?: string
+          is_charge?: boolean
+          is_off_care?: boolean
+          nurse_name: string
+          schedule_id: string
+          updated_at?: string
+          warnings?: string[]
+        }
+        Update: {
+          assigned_rooms?: string[]
+          chemo_count?: number
+          created_at?: string
+          difficulty_score?: number
+          id?: string
+          is_charge?: boolean
+          is_off_care?: boolean
+          nurse_name?: string
+          schedule_id?: string
+          updated_at?: string
+          warnings?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nurse_assignments_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          assigned_nurse: string | null
+          created_at: string
+          difficulty: string
+          id: string
+          is_chemo: boolean
+          is_occupied: boolean
+          previous_nurse: string | null
+          room_number: string
+          schedule_id: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_nurse?: string | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          is_chemo?: boolean
+          is_occupied?: boolean
+          previous_nurse?: string | null
+          room_number: string
+          schedule_id: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_nurse?: string | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          is_chemo?: boolean
+          is_occupied?: boolean
+          previous_nurse?: string | null
+          room_number?: string
+          schedule_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rooms_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedules: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          nurse_count: number
+          nurse_names: string[]
+          shift_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          nurse_count: number
+          nurse_names: string[]
+          shift_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          nurse_count?: number
+          nurse_names?: string[]
+          shift_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
