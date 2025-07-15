@@ -10,7 +10,15 @@ interface PreviousShiftInputProps {
 }
 
 export const PreviousShiftInput = ({ rooms, nurseNames, onPreviousNurseChange }: PreviousShiftInputProps) => {
-  const occupiedRooms = rooms.filter(room => room.isOccupied);
+  // Show all rooms for previous shift input (not just occupied ones)
+  const sortedRooms = [...rooms].sort((a, b) => {
+    const aNum = parseInt(a.number.replace(/[AB]/g, ''));
+    const bNum = parseInt(b.number.replace(/[AB]/g, ''));
+    if (aNum === bNum) {
+      return a.number.localeCompare(b.number);
+    }
+    return aNum - bNum;
+  });
 
   return (
     <div className="space-y-4">
@@ -19,10 +27,12 @@ export const PreviousShiftInput = ({ rooms, nurseNames, onPreviousNurseChange }:
       </p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {occupiedRooms.map((room) => (
-          <Card key={room.id} className="p-4">
+        {sortedRooms.map((room) => (
+          <Card key={room.id} className={`p-4 ${!room.isOccupied ? 'opacity-60 border-dashed' : ''}`}>
             <div className="space-y-2">
-              <Label className="font-semibold">Room {room.number}</Label>
+              <Label className="font-semibold">
+                Room {room.number} {!room.isOccupied && <span className="text-muted-foreground">(Empty)</span>}
+              </Label>
               <Select
                 value={room.previousNurse || "none"}
                 onValueChange={(value) => onPreviousNurseChange(room.id, value === "none" ? "" : value)}
