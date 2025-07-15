@@ -48,14 +48,29 @@ export const RoomGrid = ({
   };
 
   const getProximityGroup = (roomNumber: string) => {
-    // Group rooms by proximity for visual organization
-    if (['600', '601', '602', '603', '607', '608', '609', '610'].includes(roomNumber)) {
+    // Group rooms by proximity for visual organization (matches contiguous blocks)
+    if (['600', '601', '602', '603'].includes(roomNumber)) {
       return 'group-a';
     }
-    if (['617A', '617B', '618A', '618B', '619', '620', '621', '623'].includes(roomNumber)) {
+    if (['604', '605A', '605B', '606A', '606B'].includes(roomNumber)) {
       return 'group-b';
     }
+    if (['607', '608', '609', '610'].includes(roomNumber)) {
+      return 'group-a';
+    }
+    if (['611', '612', '613', '614'].includes(roomNumber)) {
+      return 'group-c';
+    }
     if (['615A', '615B', '616A', '616B'].includes(roomNumber)) {
+      return 'group-c';
+    }
+    if (['617A', '617B', '618A', '618B'].includes(roomNumber)) {
+      return 'group-b';
+    }
+    if (['619', '620', '621'].includes(roomNumber)) {
+      return 'group-b';
+    }
+    if (['622', '623'].includes(roomNumber)) {
       return 'group-c';
     }
     return 'group-other';

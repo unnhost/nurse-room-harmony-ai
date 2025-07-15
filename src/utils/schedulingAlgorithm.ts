@@ -14,12 +14,16 @@ export interface SchedulingResult {
   success: boolean;
 }
 
-// Room proximity groups for optimal assignment
+// Room proximity groups for optimal assignment (contiguous blocks)
 const PROXIMITY_GROUPS = {
-  'group-a': ['600', '601', '602', '603', '607', '608', '609', '610'],
-  'group-b': ['617A', '617B', '618A', '618B', '619', '620', '621', '623'],
-  'group-c': ['615A', '615B', '616A', '616B'],
-  'group-other': ['604', '605A', '605B', '606A', '606B', '611', '612', '613', '614', '615', '616', '622']
+  'block-1': ['600', '601', '602', '603'],
+  'block-2': ['604', '605A', '605B', '606A', '606B'],
+  'block-3': ['607', '608', '609', '610'],
+  'block-4': ['611', '612', '613', '614'],
+  'block-5': ['615A', '615B', '616A', '616B'],
+  'block-6': ['617A', '617B', '618A', '618B'],
+  'block-7': ['619', '620', '621'],
+  'block-8': ['622', '623']
 };
 
 // Difficulty scoring system
@@ -124,9 +128,9 @@ export function generateSchedule(params: SchedulingParams): SchedulingResult {
     warnings.push(`${unassignedChemo.length} chemo rooms could not be assigned (max 1 per nurse)`);
   }
 
-  // Assign remaining non-chemo rooms using proximity-aware algorithm
+  // Assign remaining non-chemo rooms using contiguous block algorithm
   const remainingRooms = nonChemoRooms.filter(room => !room.assignedNurse);
-  assignRoomsByProximity(remainingRooms, activeNurses, targetRoomsPerNurse);
+  assignRoomsByContiguousBlocks(remainingRooms, activeNurses, targetRoomsPerNurse);
 
   // Calculate final statistics and warnings
   activeNurses.forEach(nurse => {
@@ -173,46 +177,79 @@ export function generateSchedule(params: SchedulingParams): SchedulingResult {
   };
 }
 
-function assignRoomsByProximity(
+function assignRoomsByContiguousBlocks(
   rooms: Room[], 
   nurses: NurseAssignment[], 
   targetCounts: number[]
 ): void {
-  // Group rooms by proximity
-  const roomsByGroup: { [key: string]: Room[] } = {};
+  // Group rooms by contiguous blocks
+  const roomsByBlock: { [key: string]: Room[] } = {};
   
   rooms.forEach(room => {
-    const groupKey = Object.keys(PROXIMITY_GROUPS).find(key => 
+    const blockKey = Object.keys(PROXIMITY_GROUPS).find(key => 
       PROXIMITY_GROUPS[key as keyof typeof PROXIMITY_GROUPS].includes(room.number)
-    ) || 'group-other';
+    ) || 'unassigned';
     
-    if (!roomsByGroup[groupKey]) {
-      roomsByGroup[groupKey] = [];
+    if (!roomsByBlock[blockKey]) {
+      roomsByBlock[blockKey] = [];
     }
-    roomsByGroup[groupKey].push(room);
+    roomsByBlock[blockKey].push(room);
   });
 
-  // Assign rooms group by group to maintain proximity
-  Object.values(roomsByGroup).forEach(groupRooms => {
-    groupRooms.forEach(room => {
-      // Find nurse with most capacity who can take this room
-      let bestNurse = -1;
-      let maxCapacity = -1;
-      
-      for (let i = 0; i < nurses.length; i++) {
-        const capacity = targetCounts[i] - nurses[i].rooms.length;
-        if (capacity > 0 && capacity > maxCapacity) {
-          maxCapacity = capacity;
-          bestNurse = i;
-        }
+  // Sort blocks by total rooms (prioritize larger blocks for better distribution)
+  const sortedBlocks = Object.entries(roomsByBlock)
+    .sort(([,a], [,b]) => b.length - a.length);
+
+  // Assign entire blocks to nurses when possible
+  for (const [blockKey, blockRooms] of sortedBlocks) {
+    if (blockRooms.length === 0) continue;
+
+    // Find nurse with most capacity who can take the entire block
+    let bestNurse = -1;
+    let maxCapacity = -1;
+    
+    for (let i = 0; i < nurses.length; i++) {
+      const capacity = targetCounts[i] - nurses[i].rooms.length;
+      if (capacity >= blockRooms.length && capacity > maxCapacity) {
+        maxCapacity = capacity;
+        bestNurse = i;
       }
-      
-      if (bestNurse !== -1) {
+    }
+    
+    if (bestNurse !== -1) {
+      // Assign entire block to this nurse
+      blockRooms.forEach(room => {
         nurses[bestNurse].rooms.push(room);
         room.assignedNurse = nurses[bestNurse].name;
+      });
+    } else {
+      // Block is too large, split it among nurses with capacity
+      // Sort rooms within block by difficulty (hardest first)
+      const sortedBlockRooms = blockRooms.sort((a, b) => 
+        DIFFICULTY_WEIGHTS[b.difficulty] - DIFFICULTY_WEIGHTS[a.difficulty]
+      );
+      
+      // Distribute rooms within block to nurses with capacity
+      for (const room of sortedBlockRooms) {
+        // Find nurse with most capacity
+        let bestNurse = -1;
+        let maxCapacity = -1;
+        
+        for (let i = 0; i < nurses.length; i++) {
+          const capacity = targetCounts[i] - nurses[i].rooms.length;
+          if (capacity > 0 && capacity > maxCapacity) {
+            maxCapacity = capacity;
+            bestNurse = i;
+          }
+        }
+        
+        if (bestNurse !== -1) {
+          nurses[bestNurse].rooms.push(room);
+          room.assignedNurse = nurses[bestNurse].name;
+        }
       }
-    });
-  });
+    }
+  }
 }
 
 function calculateProximityScore(rooms: Room[]): number {
