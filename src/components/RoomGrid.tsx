@@ -82,7 +82,7 @@ export const RoomGrid = ({
   };
 
   return (
-    <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 p-4">
+    <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 p-6">
       {rooms.map((room) => {
         const proximityGroup = getProximityGroup(room.number);
         
@@ -90,22 +90,25 @@ export const RoomGrid = ({
           <Card 
             key={room.id}
             className={cn(
-              "relative transition-all duration-200 cursor-pointer hover:shadow-medium",
-              "border-2",
-              !room.isOccupied && "opacity-50",
-              room.assignedNurse && "ring-2 ring-primary ring-offset-2",
-              proximityGroup === 'group-a' && "border-blue-200",
-              proximityGroup === 'group-b' && "border-green-200",
-              proximityGroup === 'group-c' && "border-purple-200"
+              "relative transition-all duration-300 cursor-pointer hover:shadow-strong hover:scale-105",
+              "border-2 shadow-card bg-card/80 backdrop-blur-sm",
+              !room.isOccupied && "opacity-50 grayscale",
+              room.assignedNurse && "ring-2 ring-primary ring-offset-2 shadow-glow",
+              proximityGroup === 'group-a' && "border-[hsl(var(--proximity-group-a))] hover:border-[hsl(var(--proximity-group-a))]",
+              proximityGroup === 'group-b' && "border-[hsl(var(--proximity-group-b))] hover:border-[hsl(var(--proximity-group-b))]",
+              proximityGroup === 'group-c' && "border-[hsl(var(--proximity-group-c))] hover:border-[hsl(var(--proximity-group-c))]",
+              proximityGroup === 'group-other' && "border-[hsl(var(--proximity-group-other))] hover:border-[hsl(var(--proximity-group-other))]"
             )}
             onClick={() => onRoomClick(room)}
           >
-            <CardContent className="p-3 space-y-2">
+            <CardContent className="p-4 space-y-3">
               {/* Room Number */}
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-sm">{room.number}</span>
+                <span className="font-bold text-base">{room.number}</span>
                 {room.isChemo && (
-                  <Stethoscope className="h-4 w-4 text-chemo" />
+                  <div className="p-1 bg-chemo/20 rounded-full">
+                    <Stethoscope className="h-4 w-4 text-chemo" />
+                  </div>
                 )}
               </div>
 
@@ -128,25 +131,25 @@ export const RoomGrid = ({
 
               {/* Assigned Nurse */}
               {room.assignedNurse && (
-                <div className="text-xs text-muted-foreground truncate">
+                <div className="text-xs text-muted-foreground truncate bg-primary/10 px-2 py-1 rounded">
                   Current: {room.assignedNurse}
                 </div>
               )}
 
               {/* Previous Nurse (for continuity) */}
               {showPreviousAssignments && room.previousNurse && (
-                <div className="text-xs text-accent-foreground truncate">
+                <div className="text-xs text-accent-foreground truncate bg-accent/10 px-2 py-1 rounded">
                   Previous: {room.previousNurse}
                 </div>
               )}
 
               {/* Edit Controls */}
               {editMode && (
-                <div className="flex flex-col gap-1 mt-2">
+                <div className="flex flex-col gap-2 mt-2">
                   <Button
-                    variant="ghost"
+                    variant={room.isOccupied ? "success" : "outline"}
                     size="sm"
-                    className="text-xs px-2 py-1 w-full"
+                    className="text-xs px-2 py-1 w-full h-8"
                     onClick={(e) => {
                       e.stopPropagation();
                       onOccupancyToggle(room.id);
@@ -155,9 +158,12 @@ export const RoomGrid = ({
                     {room.isOccupied ? 'Occupied' : 'Empty'}
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant={room.isChemo ? "outline" : "ghost"}
                     size="sm"
-                    className="text-xs px-2 py-1 w-full"
+                    className={cn(
+                      "text-xs px-2 py-1 w-full h-8",
+                      room.isChemo && "border-chemo text-chemo hover:bg-chemo/10"
+                    )}
                     onClick={(e) => {
                       e.stopPropagation();
                       onChemoToggle(room.id);

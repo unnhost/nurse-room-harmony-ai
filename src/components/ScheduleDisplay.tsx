@@ -66,16 +66,16 @@ export const ScheduleDisplay = ({ assignments, totalRooms, warnings }: ScheduleD
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Global Warnings */}
       {warnings.length > 0 && (
-        <Alert className="border-destructive">
-          <AlertTriangle className="h-4 w-4" />
+        <Alert className="border-destructive bg-destructive/5 shadow-card">
+          <AlertTriangle className="h-5 w-5" />
           <AlertDescription>
-            <div className="font-semibold mb-2">Assignment Warnings:</div>
-            <ul className="list-disc list-inside space-y-1">
+            <div className="font-semibold mb-3 text-base">Assignment Warnings:</div>
+            <ul className="list-disc list-inside space-y-2">
               {warnings.map((warning, index) => (
-                <li key={index} className="text-sm">{warning}</li>
+                <li key={index} className="text-sm leading-relaxed">{warning}</li>
               ))}
             </ul>
           </AlertDescription>
@@ -83,38 +83,44 @@ export const ScheduleDisplay = ({ assignments, totalRooms, warnings }: ScheduleD
       )}
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="shadow-card border-0 bg-gradient-primary text-white">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Users className="h-6 w-6" />
+              </div>
               <div>
-                <div className="text-sm font-medium">Total Nurses</div>
-                <div className="text-2xl font-bold">{assignments.length}</div>
+                <div className="text-sm font-medium opacity-90">Total Nurses</div>
+                <div className="text-3xl font-bold">{assignments.length}</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="h-5 w-5 rounded bg-accent"></div>
+        <Card className="shadow-card border-0 bg-gradient-accent text-white">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <div className="h-6 w-6 rounded bg-white/50"></div>
+              </div>
               <div>
-                <div className="text-sm font-medium">Total Rooms</div>
-                <div className="text-2xl font-bold">{totalRooms}</div>
+                <div className="text-sm font-medium opacity-90">Total Rooms</div>
+                <div className="text-3xl font-bold">{totalRooms}</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Stethoscope className="h-5 w-5 text-chemo" />
+        <Card className="shadow-card border-0 bg-card/80 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-chemo/20 rounded-lg">
+                <Stethoscope className="h-6 w-6 text-chemo" />
+              </div>
               <div>
-                <div className="text-sm font-medium">Chemo Patients</div>
-                <div className="text-2xl font-bold">
+                <div className="text-sm font-medium text-muted-foreground">Chemo Patients</div>
+                <div className="text-3xl font-bold text-chemo">
                   {assignments.reduce((sum, nurse) => sum + nurse.chemoCount, 0)}
                 </div>
               </div>
@@ -122,13 +128,15 @@ export const ScheduleDisplay = ({ assignments, totalRooms, warnings }: ScheduleD
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
+        <Card className="shadow-card border-0 bg-card/80 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-warning/20 rounded-lg">
+                <AlertTriangle className="h-6 w-6 text-warning" />
+              </div>
               <div>
-                <div className="text-sm font-medium">Warnings</div>
-                <div className="text-2xl font-bold">{warnings.length}</div>
+                <div className="text-sm font-medium text-muted-foreground">Warnings</div>
+                <div className="text-3xl font-bold text-warning">{warnings.length}</div>
               </div>
             </div>
           </CardContent>
@@ -136,22 +144,27 @@ export const ScheduleDisplay = ({ assignments, totalRooms, warnings }: ScheduleD
       </div>
 
       {/* Nurse Assignments */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {assignments.map((nurse) => (
           <Card 
             key={nurse.id}
             className={cn(
-              "relative transition-all duration-200",
-              nurse.isCharge && "ring-2 ring-primary ring-offset-2",
-              nurse.isOffCare && "opacity-75",
-              nurse.warnings.length > 0 && "border-destructive"
+              "relative transition-all duration-300 hover:shadow-strong shadow-card bg-card/80 backdrop-blur-sm",
+              nurse.isCharge && "ring-2 ring-primary ring-offset-2 bg-gradient-to-br from-primary/5 to-primary/10",
+              nurse.isOffCare && "opacity-75 grayscale",
+              nurse.warnings.length > 0 && "border-destructive bg-destructive/5"
             )}
           >
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                {getNurseTypeIcon(nurse)}
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className={cn(
+                  "p-2 rounded-lg",
+                  nurse.isCharge ? "bg-primary/20" : nurse.isOffCare ? "bg-muted" : "bg-accent/20"
+                )}>
+                  {getNurseTypeIcon(nurse)}
+                </div>
                 <div>
-                  <div className="font-semibold">{nurse.name}</div>
+                  <div className="font-bold">{nurse.name}</div>
                   <div className="text-sm text-muted-foreground font-normal">
                     {getNurseTypeLabel(nurse)}
                   </div>
@@ -159,7 +172,7 @@ export const ScheduleDisplay = ({ assignments, totalRooms, warnings }: ScheduleD
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
               {/* Room Count and Stats */}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Rooms:</span>

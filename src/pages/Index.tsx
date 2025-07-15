@@ -92,46 +92,49 @@ const Index = () => {
     }
   };
   return <div className="min-h-screen bg-gradient-subtle">
-      <div className="container mx-auto p-6">
-        <div className="mb-8 text-center">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="mb-12 text-center space-y-4">
           <h1 className="text-4xl font-bold text-foreground mb-2">Infill 6 assignment </h1>
-          <p className="text-lg text-muted-foreground">
-        </p>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Intelligent nurse scheduling system for optimal patient care distribution
+          </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="setup" className="flex items-center gap-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <TabsList className="grid w-full grid-cols-4 h-14 bg-card border shadow-card">
+            <TabsTrigger value="setup" className="flex items-center gap-2 data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-medium transition-all duration-200">
               <Settings className="h-4 w-4" />
-              Setup
+              <span className="hidden sm:inline">Setup</span>
             </TabsTrigger>
-            <TabsTrigger value="previous" className="flex items-center gap-2">
+            <TabsTrigger value="previous" className="flex items-center gap-2 data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-medium transition-all duration-200">
               <Users className="h-4 w-4" />
-              Previous Shift
+              <span className="hidden sm:inline">Previous Shift</span>
             </TabsTrigger>
-            <TabsTrigger value="rooms" className="flex items-center gap-2">
+            <TabsTrigger value="rooms" className="flex items-center gap-2 data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-medium transition-all duration-200">
               <Users className="h-4 w-4" />
-              Rooms
+              <span className="hidden sm:inline">Rooms</span>
             </TabsTrigger>
-            <TabsTrigger value="schedule" className="flex items-center gap-2">
+            <TabsTrigger value="schedule" className="flex items-center gap-2 data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-medium transition-all duration-200">
               <Calendar className="h-4 w-4" />
-              Schedule
+              <span className="hidden sm:inline">Schedule</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="setup" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
+          <TabsContent value="setup" className="space-y-8">
+            <Card className="shadow-card border-0 bg-card/50 backdrop-blur-sm">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center gap-3 text-2xl">
+                  <div className="p-2 bg-gradient-primary rounded-lg">
+                    <Settings className="h-6 w-6 text-white" />
+                  </div>
                   Shift Configuration
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="nurseCount">Number of Nurses</Label>
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <Label htmlFor="nurseCount" className="text-base font-semibold">Number of Nurses</Label>
                   <Select value={nurseCount.toString()} onValueChange={handleNurseCountChange}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 text-base">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -142,21 +145,33 @@ const Index = () => {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Nurse Names</Label>
-                  {nurseNames.map((name, index) => <Input key={index} value={name} onChange={e => {
-                  const newNames = [...nurseNames];
-                  newNames[index] = e.target.value;
-                  setNurseNames(newNames);
-                }} placeholder={`Nurse ${index + 1} name`} />)}
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold">Nurse Names</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {nurseNames.map((name, index) => (
+                      <Input 
+                        key={index} 
+                        value={name} 
+                        onChange={e => {
+                          const newNames = [...nurseNames];
+                          newNames[index] = e.target.value;
+                          setNurseNames(newNames);
+                        }} 
+                        placeholder={`Nurse ${index + 1} name`} 
+                        className="h-12 text-base"
+                      />
+                    ))}
+                  </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="p-3 bg-muted rounded-lg">
-                    
+                <div className="space-y-6 pt-4">
+                  <div className="p-6 bg-gradient-subtle rounded-xl border border-border/50">
+                    <p className="text-center text-muted-foreground">
+                      Configure your shift settings and generate optimal nurse assignments
+                    </p>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <Button onClick={generateAssignments} className="flex-1" variant="medical" size="lg">
                       <Play className="h-5 w-5 mr-2" />
                       Generate Schedule
@@ -172,10 +187,15 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="previous">
-            <Card>
-              <CardHeader>
-                <CardTitle>Previous Shift Assignments</CardTitle>
-                <p className="text-sm text-muted-foreground">
+            <Card className="shadow-card border-0 bg-card/50 backdrop-blur-sm">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center gap-3 text-2xl">
+                  <div className="p-2 bg-gradient-accent rounded-lg">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                  Previous Shift Assignments
+                </CardTitle>
+                <p className="text-muted-foreground mt-2">
                   Set previous nurse assignments for continuity of care
                 </p>
               </CardHeader>
@@ -186,9 +206,14 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="rooms">
-            <Card>
-              <CardHeader>
-                <CardTitle>Room Configuration</CardTitle>
+            <Card className="shadow-card border-0 bg-card/50 backdrop-blur-sm">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center gap-3 text-2xl">
+                  <div className="p-2 bg-gradient-accent rounded-lg">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                  Room Configuration
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <RoomGrid rooms={rooms} onRoomClick={() => {}} onDifficultyChange={handleRoomDifficultyChange} onChemoToggle={handleChemoToggle} onOccupancyToggle={handleOccupancyToggle} editMode={true} />
@@ -197,14 +222,21 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="schedule">
-            {assignments.length > 0 ? <ScheduleDisplay assignments={assignments} totalRooms={rooms.filter(r => r.isOccupied).length} warnings={warnings} /> : <Card>
-                <CardContent className="text-center py-12">
-                  <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-lg text-muted-foreground">
-                    No schedule generated yet. Configure your shift and generate assignments.
+            {assignments.length > 0 ? (
+              <ScheduleDisplay assignments={assignments} totalRooms={rooms.filter(r => r.isOccupied).length} warnings={warnings} />
+            ) : (
+              <Card className="shadow-card border-0 bg-card/50 backdrop-blur-sm">
+                <CardContent className="text-center py-16">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-primary rounded-full mb-6 shadow-glow">
+                    <Calendar className="h-10 w-10 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-semibold mb-2">No Schedule Generated</h3>
+                  <p className="text-lg text-muted-foreground max-w-md mx-auto">
+                    Configure your shift settings and generate optimal nurse assignments.
                   </p>
                 </CardContent>
-              </Card>}
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
